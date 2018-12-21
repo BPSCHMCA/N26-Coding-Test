@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.DoubleSummaryStatistics;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.collections.impl.collector.BigDecimalSummaryStatistics;
+import org.eclipse.collections.impl.collector.Collectors2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,26 +25,26 @@ public class TransactionServiceImpl implements TransactionService{
 	
 	private static final Logger logger = LoggerFactory.getLogger(TransactionServiceImpl.class);
 	
-	@Value("${transaction.timeIn}")
+	@Value("${transaction.timeInSeconds}")
 	private int transTimeIn;
 	
-    private ConcurrentHashMap<Long,Double> transactionsData;
+    private ConcurrentHashMap<Long,BigDecimal> transactionsData;
     
     public TransactionServiceImpl(){
     	this.transactionsData = new ConcurrentHashMap<>();
     }
 	
 	@Override
-	public synchronized void addTransaction(Transactions transactionRequest) {
+	public synchronized void addTransaction(String transAmount, long transTimeStamp) {
 			try {
-				long requestTimeStamp = transactionRequest.getTimestamp();
+				long requestTimeStamp = transTimeStamp;
 				
-				String doubleVal = transactionRequest.getAmount();
-				  BigDecimal bdTest = new BigDecimal(  doubleVal);
-				  bdTest = bdTest.setScale(2, BigDecimal.ROUND_HALF_UP);
-				  System.out.println("doubleVal::: "+doubleVal);
+				String amountVal = transAmount;
+				BigDecimal amountValDecimal = new BigDecimal(amountVal);
+				//bdTest = bdTest.setScale(2, BigDecimal.ROUND_HALF_UP);
+				//System.out.println("doubleVal::: "+amountValDecimal);
 				//O(1)
-				this.transactionsData.put(requestTimeStamp, transactionRequest.getAmount());
+				this.transactionsData.put(requestTimeStamp, amountValDecimal);
 				
 			}catch(Exception e) {
 				logger.error("Exception in addTransaction: ", e);
@@ -56,10 +58,8 @@ public class TransactionServiceImpl implements TransactionService{
 	public synchronized Statistics findStatisticsOfTransaction() {
 		Statistics transStat = new Statistics();
 		try {
-			DoubleSummaryStatistics stats = this.transactionsData.values().stream().collect(
-	                DoubleSummaryStatistics::new,
-	                DoubleSummaryStatistics::accept,
-	                DoubleSummaryStatistics::combine);
+			BigDecimalSummaryStatistics stats = this.transactionsData.values().stream().collect(
+					Collectors2.summarizingBigDecimal(e -> e.setScale(2, BigDecimal.ROUND_HALF_UP)));
 	        
 	        transStat.setAvg(stats.getAverage());
 	        transStat.setCount(stats.getCount());
@@ -80,7 +80,6 @@ public class TransactionServiceImpl implements TransactionService{
 	 * 
 	 */
 	public synchronized void deleteTransactions() {
-		System.out.println("this.transactionsData::: "+this.transactionsData.size());
 		if(this.transactionsData != null && this.transactionsData.size() > 0)
 			this.transactionsData = new ConcurrentHashMap<>();
 	}

@@ -5,7 +5,7 @@ import com.n26.project.coding.entities.Transactions;
 
 public interface TransactionService {
 	
-	public void addTransaction(Transactions transactionRequest);
+	public void addTransaction(String transAmount, long transTimeStamp);
 	
 	public Statistics findStatisticsOfTransaction();
 	

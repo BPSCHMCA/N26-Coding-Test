@@ -1,5 +1,6 @@
 package com.n26.project.coding.controller;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.n26.project.coding.entities.Statistics;
 import com.n26.project.coding.entities.Transactions;
+import com.n26.project.coding.exceptions.InvalidDataException;
+import com.n26.project.coding.exceptions.OldTransactionException;
 import com.n26.project.coding.service.TransactionService;
 import com.n26.project.coding.utils.DateConverter;
 
@@ -27,27 +30,35 @@ public class TransactionController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(TransactionController.class);
 	
-	@Value("${transaction.timeIn}")
+	@Value("${transaction.timeInSeconds}")
 	private int transTimeIn;
 	
 	@Autowired
 	private TransactionService transactionService;
 	
 	@RequestMapping(value = "/transactions", method = RequestMethod.POST,consumes = "application/json")
-	public ResponseEntity<Void> postTransaction(@RequestBody Transactions transactionRequest) {
+	public ResponseEntity<Void> postTransaction(@RequestBody Transactions transactionRequest) throws InvalidDataException, OldTransactionException  {
 		
-			long currentTime = Instant.now().toEpochMilli();
-			System.out.println("currentTime::: "+currentTime);
+			Instant currentTime = Instant.now();
+			System.out.println("Instant.now()123::: "+currentTime);
 			
 			long transTimeStamp = DateConverter.converToTimeStamp(transactionRequest.getTimestamp());
-			//end
-			//long requestTimeStamp = transactionRequest.getTimestamp();
-			if(transTimeStamp > (currentTime - transTimeIn)) {
-				transactionService.addTransaction(transactionRequest.getAmount(), transTimeStamp);
+			String transAmount = transactionRequest.getAmount();
+			Instant transTime = DateConverter.converToTime(transactionRequest.getTimestamp());
+			
+			Duration d = Duration.between( currentTime , transTime);
+			long diffSeconds = d.getSeconds();
+			System.out.println("d is::: "+diffSeconds);
+			
+			if(diffSeconds < 0 && diffSeconds > transTimeIn) {
+				transactionService.addTransaction(transAmount, transTimeStamp);
 				return ResponseEntity.status(201).build();
+			}else if(diffSeconds > 0){
+				logger.error("Transaction Time is in future");
+				throw new InvalidDataException("Transaction Time is in future");
 			}else {
-				logger.error("Transaction Out Of Limit");
-				return ResponseEntity.status(204).build();
+				logger.error("Transaction Is Older than 60 Seconds");
+				throw new OldTransactionException("Transaction Is Older than 60 Seconds");
 			}
 	}
 	

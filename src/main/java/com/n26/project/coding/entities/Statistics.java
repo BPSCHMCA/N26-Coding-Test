@@ -1,18 +1,20 @@
 package com.n26.project.coding.entities;
 
+import java.math.BigDecimal;
+
 public class Statistics {
 	
-	private Double sum;
-	private Double avg;
-	private Double max;
-	private Double min;
+	private BigDecimal sum;
+	private BigDecimal avg;
+	private BigDecimal max;
+	private BigDecimal min;
 	private Long count;
 	
 	public Statistics() {
 		
 	}
 	
-	public Statistics(Double sum, Double avg, Double max, Double min, Long count) {
+	public Statistics(BigDecimal sum, BigDecimal avg, BigDecimal max, BigDecimal min, Long count) {
 		super();
 		this.sum = sum;
 		this.avg = avg;
@@ -20,28 +22,28 @@ public class Statistics {
 		this.min = min;
 		this.count = count;
 	}
-	public Double getSum() {
+	public BigDecimal getSum() {
 		return sum;
 	}
-	public void setSum(Double sum) {
+	public void setSum(BigDecimal sum) {
 		this.sum = sum;
 	}
-	public Double getAvg() {
+	public BigDecimal getAvg() {
 		return avg;
 	}
-	public void setAvg(Double avg) {
+	public void setAvg(BigDecimal avg) {
 		this.avg = avg;
 	}
-	public Double getMax() {
+	public BigDecimal getMax() {
 		return max;
 	}
-	public void setMax(Double max) {
+	public void setMax(BigDecimal max) {
 		this.max = max;
 	}
-	public Double getMin() {
+	public BigDecimal getMin() {
 		return min;
 	}
-	public void setMin(Double min) {
+	public void setMin(BigDecimal min) {
 		this.min = min;
 	}
 	public Long getCount() {

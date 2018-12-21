@@ -1,18 +1,20 @@
 package com.n26.project.coding.utils;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class DateConverter {
 	
-	public static Long converToTimeStamp(String dateTime) {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("YYYY-MM-DD'T'hh:mm:ss.sssZ");
-		LocalDateTime dt = LocalDateTime.parse(dateTime, dtf);
-		// assume the LocalDateTime is in UTC
-		Instant instant = dt.toInstant(ZoneOffset.UTC);
+	public static Long converToTimeStamp(String dateTime) throws DateTimeParseException {
+		Instant instant = Instant.parse(dateTime);
+		System.out.println("Instant.now():a::"+instant);
 		return instant.toEpochMilli();
+	}
+	
+	public static Instant converToTime(String dateTime) throws DateTimeParseException {
+		Instant instant = Instant.parse(dateTime);
+		System.out.println("Instant.now():b::"+instant);
+		return instant;
 	}
 
 }
