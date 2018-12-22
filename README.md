@@ -1,7 +1,7 @@
 # N26-Coding-Test
 Transactions-Statistics evaluation
 
-### We would like to have a RESTful API for our statistics. The main use case for the API is to calculate real time statistics for the last 60 seconds of transactions.
+#### We would like to have a RESTful API for our statistics. The main use case for the API is to calculate real time statistics for the last 60 seconds of transactions.
 
 The API needs the following endpoints:
 *	*POST /transactions – called every time a transaction is made.*
@@ -9,7 +9,7 @@ The API needs the following endpoints:
 *	*DELETE /transactions – deletes all transactions.*
  
 ### Specs
-#### POST /transactions
+#### POST: /transactions
 This endpoint is called to create a new transaction. It MUST execute in constant time and memory (O(1)).
 ```
 Body:
@@ -28,7 +28,7 @@ Returns: Empty body with one of the following:
 *	*400 – if the JSON is invalid*
 *	*422 – if any of the fields are not parsable or the transaction date is in the future*
  
-#### GET /statistics
+#### GET: /statistics
 This endpoint returns the statistics based on the transactions that happened in the last 60 seconds. It MUST execute in constant time and memory (O(1)).
 
 Returns:
@@ -49,8 +49,8 @@ Where:
 
 All BigDecimal values always contain exactly two decimal places and use `HALF_ROUND_UP` rounding. eg: 10.345 is returned as 10.35, 10.8 is returned as 10.80
  
-#### DELETE /transactions
-This endpoint causes all existing transactions to be deleted
+#### DELETE: /transactions
+This endpoint causes all existing transactions to be deleted.
 
 The endpoint should accept an empty request body and return a 204 status code.
  
@@ -64,3 +64,22 @@ These are the additional requirements for the solution:
 *	mvn clean install and mvn clean integration-test must complete successfully.
 *	Please ensure that no changes are made to the src/it folder since they contain automated tests that will be used to evaluate the solution.
 *	In addition to passing the tests, the solution must be at a quality level that you would be comfortable enough to put in production.
+
+## SetUp Application
+To Build:
+mvn clean install 
+
+To Run:
+spring-boot:run
+
+To Run Integration tests:
+mvn clean integration-test
+
+## Technical Specifications
+* Spring boot application
+* Java 8 Date and Streams concept
+
+### Time Complexity
+* ConcurrentHashMap used to achieve thread-safe & concurrent transactions from API requests. PUT/GET operations performed in constant time and memory O(1).
+
+
