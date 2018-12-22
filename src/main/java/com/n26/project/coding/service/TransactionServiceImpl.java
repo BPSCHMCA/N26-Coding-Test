@@ -1,7 +1,6 @@
 package com.n26.project.coding.service;
 
 import java.math.BigDecimal;
-import java.util.DoubleSummaryStatistics;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.collections.impl.collector.BigDecimalSummaryStatistics;
@@ -9,11 +8,9 @@ import org.eclipse.collections.impl.collector.Collectors2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.n26.project.coding.entities.Statistics;
-import com.n26.project.coding.entities.Transactions;
 
 /**
  * 
@@ -33,33 +30,37 @@ public class TransactionServiceImpl implements TransactionService{
     public TransactionServiceImpl(){
     	this.transactionsData = new ConcurrentHashMap<>();
     }
-	
+    
+    /**
+     * Add requested transactions under 60 seconds from current UTC Time Zone.
+     * Since ConcurrentHashMap(putIfAbsent) used to handle transaction requests, 
+     * so that concurrency & thread safety can be provided to all transactions.
+     * ConcurrentHashMap (key = timestamp in milli seconds). each request is unique enough to add transactions.
+     * ConcurrentHashMap runs in constant time and memory: O(1) for put method.
+     */
 	@Override
-	public synchronized void addTransaction(String transAmount, long transTimeStamp) {
+	public void addTransaction(BigDecimal transAmount, long transTimeStamp) {
+		logger.info("Begin: TransactionServiceImpl:addTransaction");
 			try {
-				long requestTimeStamp = transTimeStamp;
-				
-				String amountVal = transAmount;
-				BigDecimal amountValDecimal = new BigDecimal(amountVal);
-				//bdTest = bdTest.setScale(2, BigDecimal.ROUND_HALF_UP);
-				//System.out.println("doubleVal::: "+amountValDecimal);
-				//O(1)
-				this.transactionsData.put(requestTimeStamp, amountValDecimal);
-				
+				this.transactionsData.putIfAbsent(transTimeStamp, transAmount); //check-if-absent-then-set method
 			}catch(Exception e) {
-				logger.error("Exception in addTransaction: ", e);
+				logger.error("Exception in TransactionServiceImpl:addTransaction: ", e);
 			}
+		logger.info("End: TransactionServiceImpl:addTransaction");
 	}
 
 	/**
-	 * Get all statistics
+	 * ConcurrentHashMap runs in constant time and memory: O(1) for get method.
+	 * Here all map values are taken single time to prepare Statistics.
+	 * Eclipse collection used for capturing statistics of BigDecimal Values.
 	 */
 	@Override
-	public synchronized Statistics findStatisticsOfTransaction() {
+	public Statistics findStatisticsOfTransaction() {
+		logger.info("Begin: TransactionServiceImpl:findStatisticsOfTransaction");
 		Statistics transStat = new Statistics();
 		try {
 			BigDecimalSummaryStatistics stats = this.transactionsData.values().stream().collect(
-					Collectors2.summarizingBigDecimal(e -> e.setScale(2, BigDecimal.ROUND_HALF_UP)));
+					Collectors2.summarizingBigDecimal(e -> e.setScale(2, BigDecimal.ROUND_HALF_UP))); //BigDecimal rounded up to 2 fractions.
 	        
 	        transStat.setAvg(stats.getAverage());
 	        transStat.setCount(stats.getCount());
@@ -67,20 +68,27 @@ public class TransactionServiceImpl implements TransactionService{
 	        transStat.setSum(stats.getSum());
 	        transStat.setMin(stats.getMin());
 		}catch(Exception e) {
-			logger.error("Exception in findStatisticsOfTransaction: ", e);
+			logger.error("Exception in TransactionServiceImpl:findStatisticsOfTransaction: ", e);
 		}
+		logger.info("End: TransactionServiceImpl:findStatisticsOfTransaction");
 	    return transStat;
 	}
 	
 	/**
 	 * 
-	 * Remove expired statistics older than 60sec
-	 * 
-	 * Time complexity: O(statTimestampsData.size() * log statTimestampsData.size()) -> O(1)
+	 * Remove existing transactions.
 	 * 
 	 */
-	public synchronized void deleteTransactions() {
-		if(this.transactionsData != null && this.transactionsData.size() > 0)
-			this.transactionsData = new ConcurrentHashMap<>();
+	public void deleteTransactions() {
+		logger.info("Begin: TransactionServiceImpl:deleteTransactions");
+		try {
+			if(this.transactionsData != null && this.transactionsData.size() > 0) {
+				this.transactionsData = new ConcurrentHashMap<>(); // Initializing back
+			}
+		}catch(Exception e) {
+			logger.error("Exception in TransactionServiceImpl:deleteTransactions: ", e);
+		}
+		
+		logger.info("End: TransactionServiceImpl:deleteTransactions");
 	}
 }

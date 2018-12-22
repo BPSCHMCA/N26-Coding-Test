@@ -1,12 +1,15 @@
 package com.n26.project.coding.entities;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class Transactions {
 	@NotNull
+	@NotEmpty
 	private String amount;
 	
 	@NotNull
+	@NotEmpty
 	private String timestamp;
 	
 	public Transactions(@NotNull String amount, @NotNull String timestamp) {
