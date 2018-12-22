@@ -66,14 +66,14 @@ These are the additional requirements for the solution:
 *	In addition to passing the tests, the solution must be at a quality level that you would be comfortable enough to put in production.
 
 ## SetUp Application
-To Build:
+To Build: (Unit Test cases included)
 mvn clean install 
 
 To Run:
 spring-boot:run
 
 To Run Integration tests:
-mvn clean integration-test
+mvn clean failsafe:integration-test
 
 ## Technical Specifications
 * Spring boot application
