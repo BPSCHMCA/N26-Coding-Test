@@ -1,9 +1,11 @@
 package com.n26.project.coding.service;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import org.eclipse.collections.impl.collector.BigDecimalSummaryStatistics;
+import com.n26.project.coding.utils.BigDecimalSummaryStatistics;
 import org.eclipse.collections.impl.collector.Collectors2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,14 +61,25 @@ public class TransactionServiceImpl implements TransactionService{
 		logger.info("Begin: TransactionServiceImpl:findStatisticsOfTransaction");
 		Statistics transStat = new Statistics();
 		try {
-			BigDecimalSummaryStatistics stats = this.transactionsData.values().stream().collect(
-					Collectors2.summarizingBigDecimal(e -> e.setScale(2, BigDecimal.ROUND_HALF_UP))); //BigDecimal rounded up to 2 fractions.
+			/*BigDecimalSummaryStatistics stats = this.transactionsData.values().stream().collect(
+					Collectors2.summarizingBigDecimal(e -> e.setScale(2, BigDecimal.ROUND_HALF_UP))); //BigDecimal rounded up to 2 fractions.*/
+			
+			BigDecimalSummaryStatistics bds = this.transactionsData.values().stream().collect(BigDecimalSummaryStatistics.statistics());
+			
+	        System.out.println("count========================> "+bds.getCount());
+	        System.out.println("count========================> "+bds.getCount());
 	        
-	        transStat.setAvg(stats.getAverage());
-	        transStat.setCount(stats.getCount());
-	        transStat.setMax(stats.getMax());
-	        transStat.setSum(stats.getSum());
-	        transStat.setMin(stats.getMin());
+	        
+	        /*Iterator<BigDecimal> it = this.transactionsData.values().stream().iterator();
+	        while(it.hasNext()) {
+	        	System.out.println("values are::: "+it.next());
+	        	transStat.setSum(transStat.getSum().add(it.next()));
+	        }*/
+	        transStat.setAvg(bds.getAverage());
+	        transStat.setCount(bds.getCount());
+	        transStat.setMax(bds.getMax());
+	        transStat.setSum(bds.getSum());
+	        transStat.setMin(bds.getMin());
 		}catch(Exception e) {
 			logger.error("Exception in TransactionServiceImpl:findStatisticsOfTransaction: ", e);
 		}
